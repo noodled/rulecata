@@ -160,7 +160,7 @@ class LogHandler(logging.StreamHandler):
             level_prefix = self.YELLOW
             message_prefix = ""
 
-        self.stream.write("%s%s%s <%s%s%s> -- %s%s%s\n" % (
+        self.stream.write("%s%s%s - <%s%s%s> -- %s%s%s\n" % (
             self.GREEN,
             self.formatTime(record),
             self.RESET,
@@ -307,7 +307,7 @@ class Fetch(object):
             checksum_url = url + ".md5"
             local_checksum = hashlib.md5(open(tmp_filename).read()).hexdigest()
             remote_checksum_buf = BytesIO()
-            logger.info("Fetching %s." % (checksum_url))
+            logger.info("Checking %s." % (checksum_url))
             remote_checksum = rulecata.http.get(
                 checksum_url, remote_checksum_buf)
             logger.debug("Local checksum=|%s|; remote checksum=|%s|" % (
@@ -316,7 +316,7 @@ class Fetch(object):
                 os.utime(tmp_filename, None)
                 return True
         except Exception as err:
-            logger.error("Failed to check remote checksum: %s" % err)
+            logger.warn("Failed to check remote checksum: %s" % err)
         return False
 
     def progress_hook(self, content_length, bytes_read):
@@ -331,7 +331,6 @@ class Fetch(object):
             sys.stdout.flush()
 
     def fetch(self, url):
-        logger.info("Fetching %s." % (url))
         tmp_filename = os.path.join(
             self.args.temp_dir, rulecata.util.get_filename_from_url(url))
         if not self.args.force and os.path.exists(tmp_filename):
@@ -344,6 +343,7 @@ class Fetch(object):
                 return self.extract_files(tmp_filename)
         if not os.path.exists(self.args.temp_dir):
             os.makedirs(self.args.temp_dir)
+        logger.info("Fetching %s." % (url))
         rulecata.http.get(
             url, open(tmp_filename, "wb"), progress_hook=self.progress_hook)
         return self.extract_files(tmp_filename)
