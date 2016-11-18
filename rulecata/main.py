@@ -175,9 +175,16 @@ logger = logging.getLogger()
 logger.setLevel(level=logging.INFO)
 logger.addHandler(LogHandler())
 
-ET_PRO_URL = "https://rules.emergingthreatspro.com/%(code)s/suricata%(version)s/etpro.rules.tar.gz"
+# Template URL for Emerging Threats Pro rules.
+ET_PRO_URL = ("https://rules.emergingthreatspro.com/"
+              "%(code)s/"
+              "suricata%(version)s%(enhanced)s/"
+              "etpro.rules.tar.gz")
 
-ET_OPEN_URL = "https://rules.emergingthreats.net/open/suricata%(version)s/emerging.rules.tar.gz"
+# Template URL for Emerging Threats Open rules.
+ET_OPEN_URL = ("https://rules.emergingthreats.net/open/"
+               "suricata%(version)s%(enhanced)s/"
+               "emerging.rules.tar.gz")
 
 class IdRuleMatcher(object):
     """Matcher object to match an rulecata rule object by its signature
@@ -657,16 +664,34 @@ class FileTracker:
 def resolve_etpro_url(etpro, suricata_version):
     mappings = {
         "code": etpro,
-        "version": ""
+        "version": "",
+        "enhanced": "",
     }
-    if suricata_version and suricata_version.short:
-        mappings["version"] = "-" + suricata_version.short
+
+    if not suricata_version:
+        mappings["version"] = "-1.3"
+    elif suricata_version.major < 2 and suricata_version.minor < 3:
+        mappings["version"] = "-1.0"
+    else:
+        mappings["version"] = "-1.3"
+        mappings["enhanced"] = "-enhanced"
+
     return ET_PRO_URL % mappings
 
 def resolve_etopen_url(suricata_version):
-    mappings = {"version": ""}
-    if suricata_version and suricata_version.short:
-        mappings["version"] = "-" + suricata_version.short
+    mappings = {
+        "version": "",
+        "enhanced": "",
+    }
+
+    if not suricata_version:
+        mappings["version"] = "-1.3"
+    elif suricata_version.major < 2 and suricata_version.minor < 3:
+        mappings["version"] = "-1.0"
+    else:
+        mappings["version"] = "-1.3"
+        mappings["enhanced"] = "-enhanced"
+
     return ET_OPEN_URL % mappings
 
 def main():
