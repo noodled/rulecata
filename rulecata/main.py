@@ -44,11 +44,6 @@ try:
 except:
     from StringIO import StringIO as BytesIO
 
-try:
-    import progressbar
-except:
-    progressbar = None
-
 if sys.argv[0] == __file__:
     sys.path.insert(
         0, os.path.abspath(os.path.join(__file__, "..", "..")))
@@ -131,11 +126,9 @@ SAMPLE_THRESHOLD_IN = """# threshold.in (rulecat)
 
 """
 
-class LogHandler(logging.StreamHandler):
-    """A custom log handler that attempts to log messages using a similar
-    color and format to Suricata.
-
-    """
+class SuriColourLogHandler(logging.StreamHandler):
+    """An alternative stream log handler that logs with Suricata inspired
+    log colours."""
 
     GREEN = "\x1b[32m"
     BLUE = "\x1b[34m"
@@ -171,9 +164,15 @@ class LogHandler(logging.StreamHandler):
             record.getMessage(),
             self.RESET))
 
-logger = logging.getLogger()
-logger.setLevel(level=logging.INFO)
-logger.addHandler(LogHandler())
+if os.isatty(sys.stderr.fileno()):
+    logger = logging.getLogger()
+    logger.setLevel(level=logging.INFO)
+    logger.addHandler(SuriColourLogHandler())
+else:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - <%(levelname)s> - %(message)s")
+    logger = logging.getLogger()
 
 # Template URL for Emerging Threats Pro rules.
 ET_PRO_URL = ("https://rules.emergingthreatspro.com/"
