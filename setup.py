@@ -10,6 +10,7 @@ setup(
     author_email="ish@unx.ca",
     packages=[
         "rulecata",
+        "rulecata.configs",
         "rulecata.compat",
         "rulecata.compat.argparse",
     ],
@@ -21,4 +22,7 @@ setup(
     scripts = [
         "bin/rulecata",
     ],
+    package_data={
+        "rulecata.configs": ["*.conf", "*.in"],
+    },    
 )
