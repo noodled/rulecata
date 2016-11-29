@@ -678,11 +678,16 @@ def main():
                        help="Be quiet, warning and error messages only")
     parser.add_argument("--post-hook", metavar="<command>",
                         help="Command to run after update if modified")
-
+    parser.add_argument("-V", "--version", action="store_true", default=False,
+                        help="Display version")
     parser.add_argument("-T", "--test-command", metavar="<command>",
                         help="Command to test Suricata configuration")
 
     args = parser.parse_args()
+
+    if args.version:
+        print(rulecata.version)
+        return 0
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
@@ -693,6 +698,7 @@ def main():
         return dump_sample_configs()
 
     if (not args.output and not args.merged):
+        logger.debug("No output specified, checking for /etc/suricata/rules.")
         if os.path.exists("/etc/suricata/rules"):
             args.output = "/etc/suricata/rules"
             logger.info("No output directory specified, will use %s" % (
